@@ -1,5 +1,8 @@
 # Sticky notes
 * Probably will focus on first environment.  I'll have to see how it works to have paralell agents
+# 2/28
+-[] run training
+    -[] copy code over
 
 # 2/27
 * The reward after running ddpg pendulum isn't as high as I expected it would be.  

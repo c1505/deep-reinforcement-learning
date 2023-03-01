@@ -1,5 +1,15 @@
 # Sticky notes
 * Probably will focus on first environment.  I'll have to see how it works to have paralell agents
+
+
+# 3/1
+-[x] get git back to a clean state 
+-[] copy code over
+-[] figure out why it is states vs state for observations
+-[] 
+-[] 
+-[] 
+
 # 2/28
 -[] run training
     -[] copy code over

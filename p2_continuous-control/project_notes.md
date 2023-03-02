@@ -1,6 +1,29 @@
 # Sticky notes
-* Probably will focus on first environment.  I'll have to see how it works to have paralell agents
+## Option 1: Solve the First Version
 
+The task is episodic, and in order to solve the environment,  your agent must get an average score of +30 over 100 consecutive episodes.
+
+
+# 3/2 Thursday 
+-[x] kick off training
+-[x] adapt code so training will run without error
+-[] consider updating or at least checking torch version
+## Experiment 1.  DDPG with pendulum hyperparameters
+* Running with no hyperparameter tuning.  commit 9530ce3 .  
+### Observations
+Episode 100	Average Score: 0.18
+Episode 200	Average Score: 0.29
+Episode 300	Average Score: 0.30
+Episode 400	Average Score: 0.32
+Episode 500	Average Score: 0.38
+Episode 600	Average Score: 0.33
+Episode 700	Average Score: 0.21
+Episode 800	Average Score: 0.24
+Episode 900	Average Score: 0.27
+Episode 1000	Average Score: 0.23
+
+### Thoughts
+* Doesn't seem to be learning.  Possibly no better than random chance.  
 
 # 3/1
 -[x] get git back to a clean state 

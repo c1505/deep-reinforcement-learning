@@ -3,6 +3,34 @@
 
 The task is episodic, and in order to solve the environment,  your agent must get an average score of +30 over 100 consecutive episodes.
 
+# 3/3 Friday
+-[x] kick off training with bipedal parameters
+-[] check if i am calculating the score correctly
+-[]
+-[]
+-[]
+-[]
+-[]
+## Experiment 2 . DDPG with bipedal parameters
+Parameter differences
+* Increased buffer size
+* added weight decay
+### Results
+Episode 100	Average Score: 0.17
+Episode 200	Average Score: 0.26
+Episode 300	Average Score: 0.27
+Episode 400	Average Score: 0.30
+Episode 500	Average Score: 0.24
+Episode 600	Average Score: 0.24
+Episode 700	Average Score: 0.22
+Episode 800	Average Score: 0.37
+Episode 900	Average Score: 0.30
+Episode 1000	Average Score: 0.28
+### Discussion
+* It looks like the results are very similar as before and nowhere near the score I am needing.  
+* it is possible that I am not looking at the score correctly.  
+
+
 
 # 3/2 Thursday 
 -[x] kick off training

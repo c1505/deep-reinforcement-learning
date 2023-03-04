@@ -1,5 +1,6 @@
 # docs and experiment results can be found at https://docs.cleanrl.dev/rl-algorithms/td3/#td3_continuous_actionpy
 import argparse
+from collections import deque, namedtuple
 import os
 import random
 import time
@@ -7,14 +8,51 @@ from distutils.util import strtobool
 
 import gym
 import numpy as np
-import pybullet_envs  # noqa
+# import pybullet_envs  # noqa
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from stable_baselines3.common.buffers import ReplayBuffer
-from torch.utils.tensorboard import SummaryWriter
+# from torch.utils.tensorboard import SummaryWriter
 
+
+class ReplayBuffer2:
+    """Fixed-size buffer to store experience tuples."""
+
+    def __init__(self, action_size, buffer_size, batch_size, seed):
+        """Initialize a ReplayBuffer object.
+        Params
+        ======
+            buffer_size (int): maximum size of buffer
+            batch_size (int): size of each training batch
+        """
+        self.action_size = action_size
+        self.memory = deque(maxlen=buffer_size)  # internal memory (deque)
+        self.batch_size = batch_size
+        self.experience = namedtuple("Experience", field_names=["state", "action", "reward", "next_state", "done"])
+        self.seed = random.seed(seed)
+    
+    def add(self, state, action, reward, next_state, done):
+        """Add a new experience to memory."""
+        e = self.experience(state, action, reward, next_state, done)
+        self.memory.append(e)
+    
+    def sample(self):
+        """Randomly sample a batch of experiences from memory."""
+        experiences = random.sample(self.memory, k=self.batch_size)
+
+        states = torch.from_numpy(np.vstack([e.state for e in experiences if e is not None])).float().to(device)
+        actions = torch.from_numpy(np.vstack([e.action for e in experiences if e is not None])).float().to(device)
+        rewards = torch.from_numpy(np.vstack([e.reward for e in experiences if e is not None])).float().to(device)
+        next_states = torch.from_numpy(np.vstack([e.next_state for e in experiences if e is not None])).float().to(device)
+        dones = torch.from_numpy(np.vstack([e.done for e in experiences if e is not None]).astype(np.uint8)).float().to(device)
+
+        return (states, actions, rewards, next_states, dones)
+
+    def __len__(self):
+        """Return the current size of internal memory."""
+        return len(self.memory)
 
 def parse_args():
     # fmt: off
@@ -67,25 +105,25 @@ def parse_args():
 
 
 def make_env(env_id, seed, idx, capture_video, run_name):
-    def thunk():
-        env = gym.make(env_id)
-        env = gym.wrappers.RecordEpisodeStatistics(env)
-        if capture_video:
-            if idx == 0:
-                env = gym.wrappers.RecordVideo(env, f"videos/{run_name}")
-        env.seed(seed)
-        env.action_space.seed(seed)
-        env.observation_space.seed(seed)
-        return env
+    # def thunk():
+    env = gym.make(env_id)
+    env = gym.wrappers.RecordEpisodeStatistics(env)
+    if capture_video:
+        if idx == 0:
+            env = gym.wrappers.RecordVideo(env, f"videos/{run_name}")
+    env.seed(seed)
+    env.action_space.seed(seed)
+    env.observation_space.seed(seed)
+    return env
 
-    return thunk
+    # return thunk
 
 
 # ALGO LOGIC: initialize agent here:
 class QNetwork(nn.Module):
     def __init__(self, env):
         super().__init__()
-        self.fc1 = nn.Linear(np.array(env.single_observation_space.shape).prod() + np.prod(env.single_action_space.shape), 256)
+        self.fc1 = nn.Linear(np.array(env.observation_space.shape).prod() + np.prod(env.observation_space.shape), 256)
         self.fc2 = nn.Linear(256, 256)
         self.fc3 = nn.Linear(256, 1)
 
@@ -100,9 +138,9 @@ class QNetwork(nn.Module):
 class Actor(nn.Module):
     def __init__(self, env):
         super().__init__()
-        self.fc1 = nn.Linear(np.array(env.single_observation_space.shape).prod(), 256)
+        self.fc1 = nn.Linear(np.array(env.observation_space.shape).prod(), 256)
         self.fc2 = nn.Linear(256, 256)
-        self.fc_mu = nn.Linear(256, np.prod(env.single_action_space.shape))
+        self.fc_mu = nn.Linear(256, np.prod(env.action_space.shape))
         # action rescaling
         self.register_buffer(
             "action_scale", torch.tensor((env.action_space.high - env.action_space.low) / 2.0, dtype=torch.float32)
@@ -121,23 +159,23 @@ class Actor(nn.Module):
 if __name__ == "__main__":
     args = parse_args()
     run_name = f"{args.env_id}__{args.exp_name}__{args.seed}__{int(time.time())}"
-    if args.track:
-        import wandb
+    # if args.track:
+    #     import wandb
 
-        wandb.init(
-            project=args.wandb_project_name,
-            entity=args.wandb_entity,
-            sync_tensorboard=True,
-            config=vars(args),
-            name=run_name,
-            monitor_gym=True,
-            save_code=True,
-        )
-    writer = SummaryWriter(f"runs/{run_name}")
-    writer.add_text(
-        "hyperparameters",
-        "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key}|{value}|" for key, value in vars(args).items()])),
-    )
+    #     wandb.init(
+    #         project=args.wandb_project_name,
+    #         entity=args.wandb_entity,
+    #         sync_tensorboard=True,
+    #         config=vars(args),
+    #         name=run_name,
+    #         monitor_gym=True,
+    #         save_code=True,
+    #     )
+    # writer = SummaryWriter(f"runs/{run_name}")
+    # writer.add_text(
+    #     "hyperparameters",
+    #     "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key}|{value}|" for key, value in vars(args).items()])),
+    # )
 
     # TRY NOT TO MODIFY: seeding
     random.seed(args.seed)
@@ -148,45 +186,48 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() and args.cuda else "cpu")
 
     # env setup
-    envs = gym.vector.SyncVectorEnv([make_env(args.env_id, args.seed, 0, args.capture_video, run_name)])
-    assert isinstance(envs.single_action_space, gym.spaces.Box), "only continuous action space is supported"
+    env = make_env(args.env_id, args.seed, 0, args.capture_video, run_name)
+    # envs = gym.make()
+    # assert isinstance(env.action_space, gym.spaces.Box), "only continuous action space is supported"
 
-    actor = Actor(envs).to(device)
-    qf1 = QNetwork(envs).to(device)
-    qf2 = QNetwork(envs).to(device)
-    qf1_target = QNetwork(envs).to(device)
-    qf2_target = QNetwork(envs).to(device)
-    target_actor = Actor(envs).to(device)
+    actor = Actor(env).to(device)
+    qf1 = QNetwork(env).to(device)
+    qf2 = QNetwork(env).to(device)
+    qf1_target = QNetwork(env).to(device)
+    qf2_target = QNetwork(env).to(device)
+    target_actor = Actor(env).to(device)
     target_actor.load_state_dict(actor.state_dict())
     qf1_target.load_state_dict(qf1.state_dict())
     qf2_target.load_state_dict(qf2.state_dict())
     q_optimizer = optim.Adam(list(qf1.parameters()) + list(qf2.parameters()), lr=args.learning_rate)
     actor_optimizer = optim.Adam(list(actor.parameters()), lr=args.learning_rate)
 
-    envs.single_observation_space.dtype = np.float32
+    # envs.single_observation_space.dtype = np.float32
     rb = ReplayBuffer(
         args.buffer_size,
-        envs.single_observation_space,
-        envs.single_action_space,
+        env.observation_space,
+        env.action_space,
         device,
         handle_timeout_termination=True,
     )
+
+
     start_time = time.time()
 
     # TRY NOT TO MODIFY: start the game
-    obs = envs.reset()
+    obs = env.reset()
     for global_step in range(args.total_timesteps):
         # ALGO LOGIC: put action logic here
         if global_step < args.learning_starts:
-            actions = np.array([envs.single_action_space.sample() for _ in range(envs.num_envs)])
+            actions = np.array([env.action_space.sample()])
         else:
             with torch.no_grad():
                 actions = actor(torch.Tensor(obs).to(device))
                 actions += torch.normal(0, actor.action_scale * args.exploration_noise)
-                actions = actions.cpu().numpy().clip(envs.single_action_space.low, envs.single_action_space.high)
+                actions = actions.cpu().numpy().clip(env.action_space.low, env.action_space.high)
 
         # TRY NOT TO MODIFY: execute the game and log data.
-        next_obs, rewards, dones, infos = envs.step(actions)
+        next_obs, rewards, dones, infos = env.step(actions)
 
         # TRY NOT TO MODIFY: record rewards for plotting purposes
         for info in infos:
@@ -198,8 +239,9 @@ if __name__ == "__main__":
 
         # TRY NOT TO MODIFY: save data to reply buffer; handle `terminal_observation`
         real_next_obs = next_obs.copy()
-        for idx, d in enumerate(dones):
+        for idx, d in enumerate([dones]):
             if d:
+                print("got to this depth")
                 real_next_obs[idx] = infos[idx]["terminal_observation"]
         rb.add(obs, real_next_obs, actions, rewards, dones, infos)
 
@@ -215,7 +257,7 @@ if __name__ == "__main__":
                 ) * target_actor.action_scale
 
                 next_state_actions = (target_actor(data.next_observations) + clipped_noise).clamp(
-                    envs.single_action_space.low[0], envs.single_action_space.high[0]
+                    env.action_space.low[0], env.action_space.high[0]
                 )
                 qf1_next_target = qf1_target(data.next_observations, next_state_actions)
                 qf2_next_target = qf2_target(data.next_observations, next_state_actions)
@@ -257,5 +299,5 @@ if __name__ == "__main__":
                 print("SPS:", int(global_step / (time.time() - start_time)))
                 writer.add_scalar("charts/SPS", int(global_step / (time.time() - start_time)), global_step)
 
-    envs.close()
+    env.close()
     writer.close()

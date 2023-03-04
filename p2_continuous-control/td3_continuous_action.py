@@ -150,6 +150,8 @@ class Actor(nn.Module):
         )
 
     def forward(self, x):
+        x = x.view(-1,3)
+
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = torch.tanh(self.fc_mu(x))
@@ -220,6 +222,7 @@ if __name__ == "__main__":
 
     # TRY NOT TO MODIFY: start the game
     obs = env.reset()
+    # print(obs)
     for global_step in range(args.total_timesteps):
         # ALGO LOGIC: put action logic here
         if global_step < args.learning_starts:
@@ -234,33 +237,35 @@ if __name__ == "__main__":
         next_obs, rewards, dones, infos = env.step(actions)
 
         # TRY NOT TO MODIFY: record rewards for plotting purposes
-        for info in infos:
-            if "episode" in info.keys():
-                print(f"global_step={global_step}, episodic_return={info['episode']['r']}")
-                writer.add_scalar("charts/episodic_return", info["episode"]["r"], global_step)
-                writer.add_scalar("charts/episodic_length", info["episode"]["l"], global_step)
-                break
+        # for info in infos:
+        #     if "episode" in info.keys():
+        #         print(f"global_step={global_step}, episodic_return={info['episode']['r']}")
+        #         writer.add_scalar("charts/episodic_return", info["episode"]["r"], global_step)
+        #         writer.add_scalar("charts/episodic_length", info["episode"]["l"], global_step)
+        #         break
 
         # TRY NOT TO MODIFY: save data to reply buffer; handle `terminal_observation`
         real_next_obs = next_obs.copy()
         
-        for idx, d in enumerate([dones]):
-            if d:
-                print("got to this depth")
-                real_next_obs[idx] = infos[idx]["terminal_observation"]
-        
+        # for idx, d in enumerate([dones]):
+        #     if d:
+        #         print("got to this depth")
+        #         real_next_obs[idx] = infos[idx]["terminal_observation"]
+        #TODO deal with terminal observation
         memory.add(obs, actions, rewards, real_next_obs, dones) #TODO see if i should add info
         ## TODO see how to deal with obs and real neext obs
 
-        rb.add(obs, real_next_obs, actions, rewards, dones, infos)
+        # rb.add(obs, real_next_obs, actions, rewards, dones, infos)
 
 
         # TRY NOT TO MODIFY: CRUCIAL step easy to overlook
         obs = next_obs
 
         # ALGO LOGIC: training.
-        if global_step > args.learning_starts:
-            data = rb.sample(args.batch_size)
+        if global_step > args.learning_starts and len(memory) > args.batch_size:
+            data = memory.sample()
+            print("do i get here ? ")
+            # data = rb.sample(args.batch_size)
             with torch.no_grad():
                 clipped_noise = (torch.randn_like(data.actions, device=device) * args.policy_noise).clamp(
                     -args.noise_clip, args.noise_clip

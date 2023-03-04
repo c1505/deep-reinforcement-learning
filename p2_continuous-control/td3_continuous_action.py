@@ -243,11 +243,17 @@ if __name__ == "__main__":
 
         # TRY NOT TO MODIFY: save data to reply buffer; handle `terminal_observation`
         real_next_obs = next_obs.copy()
+        
         for idx, d in enumerate([dones]):
             if d:
                 print("got to this depth")
                 real_next_obs[idx] = infos[idx]["terminal_observation"]
+        
+        memory.add(obs, actions, rewards, real_next_obs, dones) #TODO see if i should add info
+        ## TODO see how to deal with obs and real neext obs
+
         rb.add(obs, real_next_obs, actions, rewards, dones, infos)
+
 
         # TRY NOT TO MODIFY: CRUCIAL step easy to overlook
         obs = next_obs

@@ -203,14 +203,18 @@ if __name__ == "__main__":
     actor_optimizer = optim.Adam(list(actor.parameters()), lr=args.learning_rate)
 
     # envs.single_observation_space.dtype = np.float32
+
+
+    # Replay buffer
     rb = ReplayBuffer(
         args.buffer_size,
         env.observation_space,
         env.action_space,
         device,
         handle_timeout_termination=True,
+        
     )
-
+    memory = ReplayBuffer2(env.action_space.shape, args.buffer_size, args.batch_size, args.seed)
 
     start_time = time.time()
 

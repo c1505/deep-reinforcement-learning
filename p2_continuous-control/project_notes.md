@@ -11,6 +11,42 @@ The task is episodic, and in order to solve the environment,  your agent must ge
 -[]
 -[]
 -[]
+
+* it seems unclear if SAC or TD3 will require less tuning or which one is better.  
+    * 
+
+
+
+
+## Run TD3 with reacher environment
+* Either be able to update the environment with SB3 
+* I get the same error regardless of the environment I run with.  That tells me it has to do with what the stable baselines3 buffer expects
+* probably makes sense at least now to not use that buffer
+* it is fine if I end up both implementing the buffer manually and implementing the changes that take it from ddpg to td3 in the udacity code.  that means i will just learn more
+* the better thing is to act instead of waiting and deciding
+-[] run in conda environment 
+-[] get actions matching up
+-[]
+
+
+### Differences between DDPG and TD3
+
+* Clipped Double-Q Learning
+    * Learns two Q functions instead of one
+    * uses the smaller of the two Q values to form targets in the bellman error loss functions
+    * code: second q target 
+* Delayed policy updates
+    * every two q function updates
+* target policy smoothing
+    * adds noise to the target action to make it harder for the policy to exploit Q-function errors by smoothing out Q along changes in action
+
+
+
+-[] Troubleshoot install of sb3 in 
+-[]
+
+## Experiment 5. DDPG with bipedal parameters and model from bipedal
+
 ## Experiment 2 . DDPG with bipedal parameters
 Parameter differences
 * Increased buffer size

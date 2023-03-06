@@ -146,9 +146,14 @@ class Agent():
         for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
             target_param.data.copy_(tau*local_param.data + (1.0-tau)*target_param.data)
     
-    def log(self, dict):
+    def log_to_wandb(self, dict):
+        """
+        Log metrics to Weights and Biases
+        
+        example usage:
+        log_to_wandb.log({"score": score})
+        """
         wandb.log(dict)
-        # agent.log({"Average Score over last 100 Episodes": np.mean(scores_deque)}) 
 
 class OUNoise:
     """Ornstein-Uhlenbeck process."""

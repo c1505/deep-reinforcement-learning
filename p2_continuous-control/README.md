@@ -43,4 +43,6 @@ README.md . Note that the dependency version requirement for pytorch was removed
 2. Place the file in the DRLND GitHub repository, in the `p2_continuous-control/` folder, and unzip (or decompress) the file. 
 
 
+## Run training
+* Launch the jupyter notebook `Continuous_Control.ipynb`
 

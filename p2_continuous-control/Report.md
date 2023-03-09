@@ -1,8 +1,17 @@
+[//]: # (Image References)
+
+[image1]: average_over_100.png "Average reward over last 100 episodes"
+[image2]: reward_per_episode.png "Reward Per episode"
+
+![Average reward over last 100 episodes][image1]
+![Reward per Episode][image2]
+
 # Learning Algorithm
 
 * Twin Delayed Deep Deterministic Policy Gradients
     * Paper https://arxiv.org/abs/1802.09477 
     * Successor to Deep Deterministic Policy Gradients
+    * **TODO fill in information on DDPG**
     * Implementation in the paper adapted to use with unity agent environments
     * Off Policy
     * For continuous actions
@@ -15,7 +24,7 @@
             * Adds noise to the target action.  It makes it harder for the policy to exploit Q-function errors by smoothing out Q along changes in action 
 
 ## Hyperparameters
-
+* **maybe TODO describe hyperparameters further**
 ```python
 seed = 0                # Sets PyTorch and Numpy seeds
 start_timesteps = 25e3  # Time steps initial random policy is used
@@ -30,10 +39,11 @@ policy_freq = 2         # Frequency of delayed policy updates
 save_model = True       # Save model and optimizer parameters
 ```
 ## Neural Network Model Architecture
+* **TODO finish this and double check the number of actors and critics**
 * Multilayer Perceptron 
 * Actor
     * 1 hidden layer
-    
+
 * One actor
 * Two crtics
 

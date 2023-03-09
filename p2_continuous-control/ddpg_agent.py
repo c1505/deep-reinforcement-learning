@@ -8,6 +8,7 @@ from model import Actor, Critic
 import torch
 import torch.nn.functional as F
 import torch.optim as optim
+import wandb
 
 # Parameters from pendulum
 # BUFFER_SIZE = int(1e5)  # replay buffer size
@@ -61,6 +62,10 @@ class Agent():
 
         # Replay memory
         self.memory = ReplayBuffer(action_size, BUFFER_SIZE, BATCH_SIZE, random_seed)
+        wandb.init()
+        wandb.watch(self.actor_local, log_freq=100)
+
+        
     
     def step(self, state, action, reward, next_state, done):
         """Save experience in replay memory, and use random sample from buffer to learn."""
@@ -109,6 +114,7 @@ class Agent():
         # Compute critic loss
         Q_expected = self.critic_local(states, actions)
         critic_loss = F.mse_loss(Q_expected, Q_targets)
+        wandb.log({"critic loss":critic_loss})
         # Minimize the loss
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
@@ -139,6 +145,15 @@ class Agent():
         """
         for target_param, local_param in zip(target_model.parameters(), local_model.parameters()):
             target_param.data.copy_(tau*local_param.data + (1.0-tau)*target_param.data)
+    
+    def log_to_wandb(self, dict):
+        """
+        Log metrics to Weights and Biases
+        
+        example usage:
+        log_to_wandb.log({"score": score})
+        """
+        wandb.log(dict)
 
 class OUNoise:
     """Ornstein-Uhlenbeck process."""

@@ -1,10 +1,9 @@
 [//]: # (Image References)
 
 [image1]: average_over_100.png "Average reward over last 100 episodes"
+
 [image2]: reward_per_episode.png "Reward Per episode"
 
-![Average reward over last 100 episodes][image1]
-![Reward per Episode][image2]
 
 # Learning Algorithm
 
@@ -12,6 +11,9 @@
     * Paper https://arxiv.org/abs/1802.09477 
     * Successor to Deep Deterministic Policy Gradients
     * **TODO fill in information on DDPG**
+    * DDPG
+        * Like DQN
+        * Adds an actor.  Has the DQN value network, but that network is not called the "critic" and it also has an actor network.
     * Implementation in the paper adapted to use with unity agent environments
     * Off Policy
     * For continuous actions
@@ -43,11 +45,17 @@ save_model = True       # Save model and optimizer parameters
 * Multilayer Perceptron 
 * Actor
     * 1 hidden layer
-
 * One actor
-* Two crtics
+* Two critics
+* One target network.  The target network is slowly updated for stability 
 
 https://github.com/sfujim/TD3
+
+# Plot of Rewards
+![Average reward over last 100 episodes][image1]
+![Reward per Episode][image2]
+
+The environment is considered solved when the average rewards for the previous 100 episodes is greater than 30.  This environment is solved by episode 200.
 
 # Future Directions
 * hyperparemeter tuning
@@ -66,6 +74,7 @@ https://github.com/sfujim/TD3
 The report clearly describes the learning algorithm, along with the chosen hyperparameters. It also describes the model architectures for any neural networks.
 
 ## Plot of Rewards
+
 
 A plot of rewards per episode is included to illustrate that either:
 
